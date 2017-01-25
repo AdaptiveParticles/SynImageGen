@@ -24,7 +24,7 @@ FIND_PACKAGE(ArrayFire REQUIRED)
 # ArrayFire_OpenCL_FOUND     - True of the ArrayFire OpenCL library has been found.
 # ArrayFire_OpenCL_LIBRARIES - Location of ArrayFire's OpenCL library, if found
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp src/MeshDataAF.cpp src/MeshDataAF.h)
 
 # Include the ArrayFire hreaders
 INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
