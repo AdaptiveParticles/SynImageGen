@@ -6,6 +6,7 @@
 #define SYNIMAGEGEN_MESHDATAAF_H
 
 #include <vector>
+#include <algorithm>
 #include "arrayfire.h"
 
 template<class T>
