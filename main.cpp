@@ -24,15 +24,13 @@ int main() {
     syn_par.name = image_name;
     syn_par.template_name = "sphere";
 
-
     /////////////////////////////////////////
     //////////////////////////////////////////
     // SET UP THE DOMAIN SIZE
 
-
-    int x_num = 200;
-    int y_num = 200;
-    int z_num = 200;
+    int x_num = 400;
+    int y_num = 400;
+    int z_num = 400;
 
     ///////////////////////////////////////////////////////////////////
     //
@@ -57,7 +55,6 @@ int main() {
     float dom_size_x = x_num*sampling_delta;
     float dom_size_z = z_num*sampling_delta;
     test_syn_image.real_domain.set_domain_size(0, dom_size_y, 0, dom_size_x, 0, dom_size_z);
-
 
     ///////////////////////////////////////////////////////////////////
     //PSF properties
@@ -155,6 +152,7 @@ int main() {
 
     test_syn_image.generate_syn_image(test_gen_image);
 
+    std::cout << "Done" << std::endl;
 
     return 0;
 }
