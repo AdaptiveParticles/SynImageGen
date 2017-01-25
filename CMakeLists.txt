@@ -39,3 +39,9 @@ IF(${ArrayFire_OpenCL_FOUND} AND ${OpenCL_FOUND})
             ${OpenCL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 ENDIF()
 
+if(${ArrayFire_CPU_FOUND})
+    MESSAGE(STATUS "ArrayFire CPU backend found.")
+    ADD_EXECUTABLE(SynImageGen_cpu ${SOURCE_FILES})
+    TARGET_LINK_LIBRARIES(SynImageGen_cpu ${ArrayFire_CPU_LIBRARIES}
+            ${CMAKE_THREAD_LIBS_INIT})
+ENDIF()
