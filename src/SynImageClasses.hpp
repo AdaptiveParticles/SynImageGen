@@ -880,7 +880,7 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
 
     }
     //free up the templates from gpu memory if already hasn't hapepended
-    free_template_af();
+    //free_template_af();
 
     if (global_trans.gt_ind == true){
 

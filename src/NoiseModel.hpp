@@ -192,7 +192,7 @@ public:
         } else if (noise_type == "poisson"){
             apply_poisson_noise(input_image, gauss_var);
         } else {
-            std::cout << "WARNING: no noise model set" << std::endl;
+            //std::cout << "WARNING: no noise model set" << std::endl;
         }
 
 

@@ -8,6 +8,7 @@
 #include "SynImageClasses.hpp"
 #include <iostream>
 #include <fstream>
+#include "tiffio.h"
 
 void generate_sphere_template(Object_template& basic_sphere,int sample_rate,float real_size,float density = 1000000,float rad_ratio = 3.0/8.0){
     //
@@ -141,6 +142,86 @@ void generate_square_template(Object_template& basic_square,int sample_rate,floa
 //
 
 
+template <typename T>
+void load_image_tiff(MeshDataAF<T>& mesh_data,std::string file_name,int z_start = 0, int z_end = -1){
+    TIFF* tif = TIFFOpen(file_name.c_str(), "r");
+    int dircount = 0;
+    uint32 width;
+    uint32 height;
+    unsigned short nbits;
+    unsigned short samples;
+    void* raster;
+
+    if (tif) {
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &nbits);
+        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &samples);
+
+        do {
+            dircount++;
+        } while (TIFFReadDirectory(tif));
+    } else {
+        std::cout <<  "Could not open TIFF file." << std::endl;
+        return;
+    }
+
+
+    if (dircount < (z_end - z_start + 1)){
+        std::cout << "number of slices and start and finish inconsitent!!" << std::endl;
+    }
+
+    //Conditions if too many slices are asked for, or all slices
+    if (z_end > dircount) {
+        std::cout << "Not that many slices, using max number instead" << std::endl;
+        z_end = dircount-1;
+    }
+    if (z_end < 0) {
+        z_end = dircount-1;
+    }
+
+
+    dircount = z_end - z_start + 1;
+
+    long ScanlineSize=TIFFScanlineSize(tif);
+    long StripSize =  TIFFStripSize(tif);
+
+    int rowsPerStrip;
+    int nRowsToConvert;
+
+    raster = _TIFFmalloc(StripSize);
+    T *TBuf = (T*)raster;
+
+    TIFFGetFieldDefaulted(tif, TIFFTAG_ROWSPERSTRIP, &rowsPerStrip);
+
+
+    for(int i = z_start; i < (z_end+1); i++) {
+        TIFFSetDirectory(tif, i);
+
+
+        for (int topRow = 0; topRow < height; topRow += rowsPerStrip) {
+            nRowsToConvert = (topRow + rowsPerStrip >height?height- topRow : rowsPerStrip);
+
+            TIFFReadEncodedStrip(tif, TIFFComputeStrip(tif, topRow, 0), TBuf, nRowsToConvert*ScanlineSize);
+
+            std::copy(TBuf, TBuf+nRowsToConvert*width, back_inserter(mesh_data.mesh));
+
+        }
+
+
+    }
+
+    _TIFFfree(raster);
+
+
+    mesh_data.z_num = dircount;
+    mesh_data.y_num = width;
+    mesh_data.x_num = height;
+
+
+    TIFFClose(tif);
+}
+
 typedef unsigned char byte;
 
 
@@ -249,7 +330,7 @@ int read_binvox(std::string filespec,MeshDataAF<uint8_t>& bin_voxels)
 
 }
 template <typename T>
-void create_template_from_file(std::string& template_path,Object_template& obj_template,std::vector<float>& obj_size,float& density,float buff_size = 0.05){
+void create_template_from_file(std::string template_path,Object_template& obj_template,std::vector<float>& obj_size,float& density,float& rad_ratio){
 //
 //  Bevan Cheeseman 2016
 //
@@ -271,13 +352,18 @@ void create_template_from_file(std::string& template_path,Object_template& obj_t
 
     if (found_tif!=std::string::npos){
         load_image_tiff(template_data,template_path);
-    } else if (found_h5!=std::string::npos)
-        load_mesh_hdf5(template_data,template_path);
+    } else if (found_h5!=std::string::npos) {
+        //load_mesh_hdf5(template_data,template_path);
+        std::cout << "h5 support msising" << std::endl;
+        return;
+    }
     else {
         //neither tiff nor h5 found
         std::cout << "WARNING: UNKNOWN TEMPLATE FILE TYPE" << std::endl;
         return;
     }
+
+    float buff_size = (1/rad_ratio-1)/2.0;
 
 
     std::cout << template_data.x_num << std::endl;

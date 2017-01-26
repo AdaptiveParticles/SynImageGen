@@ -21,6 +21,8 @@ public :
     //data on local
     std::vector<T> mesh;
 
+    T type;
+
     std::vector<float> mesh_float;
     //data on arrayfire device
     af::array af_mesh;
