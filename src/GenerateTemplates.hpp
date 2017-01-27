@@ -65,7 +65,7 @@ void generate_sphere_template(Object_template& basic_sphere,int sample_rate,floa
     //  basic_sphere.true_object_distribution.transfer_to_arrayfire();
     //   af::array temp = basic_sphere.true_object_distribution.af_mesh;
 
-//            std::string test_data_loc = get_path("PARTGEN_OUTPUT_PATH") ;
+//            std::string test_data_loc = get_pagit addth("PARTGEN_OUTPUT_PATH") ;
 //        //
 //            MeshDataAF<uint16_t> img_out((int)temp.dims(0),(int)temp.dims(1),(int)temp.dims(2));
 //        //

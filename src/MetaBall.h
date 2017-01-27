@@ -85,11 +85,11 @@ void generate_metaball_template(Object_template& obj_template,int sample_rate,fl
     potential_field.initialize(sample_rate, sample_rate, sample_rate, 0);
 
     float center_sphere = sample_rate/2;
-    float radius_sphere = sample_rate*rad_ratio;
+    float radius_sphere = sample_rate*rad_ratio/2;
 
     float curr_dist;
 
-    int num_meta_balls = 5;
+    int num_meta_balls = 10;
 
     std::vector<MetaBall> balls;
 
@@ -97,11 +97,11 @@ void generate_metaball_template(Object_template& obj_template,int sample_rate,fl
 
     for (int l = 0; l < num_meta_balls; ++l) {
 
-        float mag = grand.rand_num(.2*radius_sphere,.5*radius_sphere);
+        float mag = grand.rand_num(.1*radius_sphere,radius_sphere);
 
-        float x0 = grand.rand_num(mag,obj_template.true_object_distribution.x_num-mag);
-        float y0 = grand.rand_num(mag,obj_template.true_object_distribution.y_num-mag);
-        float z0 = grand.rand_num(mag,obj_template.true_object_distribution.z_num-mag);
+        float x0 = grand.rand_num(rad_ratio*mag,obj_template.true_object_distribution.x_num-rad_ratio*mag);
+        float y0 = grand.rand_num(rad_ratio*mag,obj_template.true_object_distribution.y_num-rad_ratio*mag);
+        float z0 = grand.rand_num(rad_ratio*mag,obj_template.true_object_distribution.z_num-rad_ratio*mag);
 
         MetaBall temp_ball(x0,y0,z0,mag);
 
@@ -125,7 +125,7 @@ void generate_metaball_template(Object_template& obj_template,int sample_rate,fl
 
 
     //need threshold now the generated field
-    float threshold = 0.15;
+    float threshold = 0.1;
 
     for (int i = 0; i < obj_template.true_object_distribution.y_num; i++) {
         for (int j = 0; j < obj_template.true_object_distribution.x_num; j++) {
