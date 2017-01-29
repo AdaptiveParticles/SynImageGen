@@ -984,7 +984,7 @@ void SynImage::sample_imgobj_template(af::array& sampled_imgobj,std::vector<std:
     }
     else {
 
-        sampled_imgobj = (real_obj.int_scale)*object_templates[real_obj.template_id].img_object_distribution.af_mesh(y_points,x_points,z_points);
+        sampled_imgobj = (real_obj.int_scale/object_templates[real_obj.template_id].max_sampled_int)*object_templates[real_obj.template_id].img_object_distribution.af_mesh(y_points,x_points,z_points);
 
     }
     object_templates[real_obj.template_id].img_object_distribution.transfer_and_free();
