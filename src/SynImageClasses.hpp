@@ -615,11 +615,37 @@ void PSF_prop::gen_sep_guassian_template_psf(af::array& psf_filter_y,af::array& 
 
     float factor = pow(I0,1.0/3.00);
 
-    psf_filter_y = (obj.real_deltas[0])*factor*exp(-pow(y_coords,2)/(2*pow(real_sigmas[0],2)));
+    //psf_filter_y = (obj.real_deltas[0])*factor*exp(-pow(y_coords,2)/(2*pow(real_sigmas[0],2)));
 
-    psf_filter_x = (obj.real_deltas[1])*factor*exp(-pow(x_coords,2)/(2*pow(real_sigmas[1],2)));
+    //psf_filter_x = (obj.real_deltas[1])*factor*exp(-pow(x_coords,2)/(2*pow(real_sigmas[1],2)));
 
-    psf_filter_z = (obj.real_deltas[2])*factor*exp(-pow(z_coords,2)/(2*pow(real_sigmas[2],2)));
+    //psf_filter_z = (obj.real_deltas[2])*factor*exp(-pow(z_coords,2)/(2*pow(real_sigmas[2],2)));
+
+    psf_filter_y = exp(-pow(y_coords,2)/(2*pow(real_sigmas[0],2)));
+
+    psf_filter_x = exp(-pow(x_coords,2)/(2*pow(real_sigmas[1],2)));
+
+    psf_filter_z = exp(-pow(z_coords,2)/(2*pow(real_sigmas[2],2)));
+
+
+
+    af::array sum_af = sum(psf_filter_y);
+
+    float sum_y = sum_af.scalar<float>();
+
+    sum_af = sum(psf_filter_x);
+
+    float sum_x = sum_af.scalar<float>();
+
+    sum_af = sum(psf_filter_z);
+
+    float sum_z = sum_af.scalar<float>();
+
+    psf_filter_y = psf_filter_y/sum_y;
+
+    psf_filter_x = psf_filter_x/sum_x;
+
+    psf_filter_z = psf_filter_z/sum_z;
 
 }
 

@@ -43,14 +43,15 @@ void generate_sphere_template(Object_template& basic_sphere,int sample_rate,floa
     float center_sphere = sample_rate/2;
     float radius_sphere = sample_rate*rad_ratio;
 
-    float curr_dist;
 
+    int i,j,k;
 
-    for (int i = 0; i < basic_sphere.true_object_distribution.y_num; i++) {
-        for (int j = 0; j < basic_sphere.true_object_distribution.x_num; j++) {
-            for (int k = 0; k < basic_sphere.true_object_distribution.z_num; k++) {
+#pragma omp parallel for default(shared) private(j,i,k)
+    for (i = 0; i < basic_sphere.true_object_distribution.y_num; i++) {
+        for (j = 0; j < basic_sphere.true_object_distribution.x_num; j++) {
+            for (k = 0; k < basic_sphere.true_object_distribution.z_num; k++) {
 
-                curr_dist = sqrt(pow(i - center_sphere,2) + pow(j - center_sphere,2) + pow(k - center_sphere,2));
+                float curr_dist = sqrt(pow(i - center_sphere,2) + pow(j - center_sphere,2) + pow(k - center_sphere,2));
 
                 if (curr_dist < radius_sphere) {
                     basic_sphere.true_object_distribution(i,j,k) = 1*basic_sphere.max_sample;
