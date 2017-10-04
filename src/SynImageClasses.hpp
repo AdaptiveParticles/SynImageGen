@@ -787,6 +787,7 @@ public:
     Noise_Model noise_properties;
     Global_Trans global_trans;
     int ground_t;
+    float scaling_factor;
     //1 scaling intensity response
     //To add:
     //Time date
@@ -796,6 +797,7 @@ public:
     SynImage()
     {
         ground_t = 0;
+        scaling_factor  = 0;
     };
 
     void calc_voxel_convolution_rect(Object_template& obj_temp,af::array& voxel_template);
@@ -905,6 +907,13 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
         }
 
     }
+
+
+    //compute the scaling of the object
+    object_templates[real_objects[0].template_id].img_object_distribution.check_on_arrayfire();
+    object_templates[real_objects[0].template_id].img_object_distribution.transfer_from_arrayfire();
+    scaling_factor = *std::max_element(object_templates[real_objects[0].template_id].img_object_distribution.mesh.begin(), object_templates[real_objects[0].template_id].img_object_distribution.mesh.end());
+
     //free up the templates from gpu memory if already hasn't hapepended
     //free_template_af();
 
