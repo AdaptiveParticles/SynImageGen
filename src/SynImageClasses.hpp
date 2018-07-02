@@ -925,6 +925,16 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
 
     }
 
+    //gen_image.transfer_from_arrayfire();
+
+    //float max_val = *std::max_element(gen_image.mesh.begin(), gen_image.mesh.end());
+
+    //if(max_val > 62000){
+        //gen_image.af_mesh = gen_image.af_mesh*(62000.0/max_val)*.9;
+    //}
+
+    //std::cout << max_val << std::endl;
+
     noise_properties.apply_noise_model(gen_image.af_mesh);
 
     int num_byts = sizeof(S);
@@ -934,8 +944,9 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
         gen_image.af_mesh = abs(gen_image.af_mesh);
     }
 
-
     gen_image.transfer_from_arrayfire();
+
+
 
 
 }
