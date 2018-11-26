@@ -613,7 +613,7 @@ void PSF_prop::gen_sep_guassian_template_psf(af::array& psf_filter_y,af::array& 
     z_coords = z_coords*obj.real_deltas[2];
 
 
-    float factor = pow(I0,1.0/3.00);
+    //float factor = pow(I0,1.0/3.00);
 
     //psf_filter_y = (obj.real_deltas[0])*factor*exp(-pow(y_coords,2)/(2*pow(real_sigmas[0],2)));
 
@@ -804,7 +804,7 @@ public:
 
     //member function declerations
     template<typename S>
-    void generate_syn_image(MeshDataAF<S>& gen_image);
+    void generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects = true);
 
     void sample_imgobj_template(af::array& sampled_imgobj,std::vector<std::vector<float>>& obj_bounds,Real_object& real_obj);
 
@@ -830,25 +830,32 @@ public:
 };
 
 template<typename S>
-void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
+void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
     //generates an image from the Syn template
 
     af::array psf_filter;
 
-    //first load the templates to the gpu and compute the SAT
-    for(int i = 0; i < object_templates.size(); i++){
-        //create new img_object_distribution that starts with the original object
-        object_templates[i].img_object_distribution = object_templates[i].true_object_distribution;
-        object_templates[i].img_object_distribution.transfer_to_arrayfire();
+    APRTimer timer(true);
 
-        PSF_properties.apply_psf_to_template(object_templates[i]);
+    timer.start_timer("step 1");
 
-        calc_voxel_convolution_rect(object_templates[i], object_templates[i].img_object_distribution.af_mesh);
+    if(init_objects) {
+        //first load the templates to the gpu and compute the SAT
+        for (int i = 0; i < object_templates.size(); i++) {
+            //create new img_object_distribution that starts with the original object
+            object_templates[i].img_object_distribution = object_templates[i].true_object_distribution;
+            object_templates[i].img_object_distribution.transfer_to_arrayfire();
 
-        object_templates[i].img_object_distribution.transfer_and_free();
+            PSF_properties.apply_psf_to_template(object_templates[i]);
 
+            calc_voxel_convolution_rect(object_templates[i], object_templates[i].img_object_distribution.af_mesh);
+
+            object_templates[i].img_object_distribution.transfer_and_free();
+
+        }
     }
 
+    timer.stop_timer();
 
 
 
@@ -870,6 +877,8 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
     curr_obj_bounds[2].resize(2);
 
     af::array sampled_imgobj;
+
+    timer.start_timer("step 2");
 
 
     //now sample and place the objects in the image
@@ -908,6 +917,9 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
 
     }
 
+    timer.stop_timer();
+
+    timer.start_timer("step 3");
 
     //compute the scaling of the object
     object_templates[real_objects[0].template_id].img_object_distribution.check_on_arrayfire();
@@ -943,6 +955,8 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image){
     if (num_byts < 4){
         gen_image.af_mesh = abs(gen_image.af_mesh);
     }
+
+    timer.stop_timer();
 
     gen_image.transfer_from_arrayfire();
 
