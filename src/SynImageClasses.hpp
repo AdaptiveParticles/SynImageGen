@@ -835,7 +835,7 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
     af::array psf_filter;
 
-    APRTimer timer(true);
+    APRTimer timer(false);
 
     timer.start_timer("step 1");
 
@@ -850,7 +850,7 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
             calc_voxel_convolution_rect(object_templates[i], object_templates[i].img_object_distribution.af_mesh);
 
-            object_templates[i].img_object_distribution.transfer_and_free();
+            //object_templates[i].img_object_distribution.transfer_and_free();
 
         }
     }
@@ -866,6 +866,9 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
     //init, then push to the gpu
     gen_image.initialize(genimage_y_num,genimage_x_num,genimage_z_num,0);
+
+    //gen_image.af_mesh = af::array(genimage_y_num,genimage_x_num,genimage_z_num);
+
     gen_image.transfer_to_arrayfire();
 
     gen_image.af_mesh = constant(0,gen_image.af_mesh.dims(),f32);
@@ -879,6 +882,7 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
     af::array sampled_imgobj;
 
     timer.start_timer("step 2");
+
 
 
     //now sample and place the objects in the image
@@ -897,7 +901,11 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
             //gen_image.free_arrayfire();
 
+           // timer.start_timer("step 1");
+
             sample_imgobj_template(sampled_imgobj,curr_obj_bounds,real_objects[i]);
+
+           // timer.stop_timer();
 
             //gen_image.check_on_arrayfire();
 
@@ -906,9 +914,13 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
             //temp += sampled_imgobj;
 
+           // timer.start_timer("step 2");
+
             af::array temp = gen_image.af_mesh(af::seq(curr_obj_bounds[0][0],curr_obj_bounds[0][1]),af::seq(curr_obj_bounds[1][0],curr_obj_bounds[1][1]),af::seq(curr_obj_bounds[2][0],curr_obj_bounds[2][1]));
 
             gen_image.af_mesh(af::seq(curr_obj_bounds[0][0],curr_obj_bounds[0][1]),af::seq(curr_obj_bounds[1][0],curr_obj_bounds[1][1]),af::seq(curr_obj_bounds[2][0],curr_obj_bounds[2][1])) = temp +  sampled_imgobj;
+
+            //timer.stop_timer();
 
             //for(int k = curr_obj_bounds[2][0];k <= curr_obj_bounds[2][1];k++){
             //    gen_image.af_mesh(af::seq(curr_obj_bounds[0][0],curr_obj_bounds[0][1]),af::seq(curr_obj_bounds[1][0],curr_obj_bounds[1][1]),k) += sampled_imgobj(af::span,af::span,k);
@@ -921,11 +933,15 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
     timer.start_timer("step 3");
 
-    //compute the scaling of the object
-    object_templates[real_objects[0].template_id].img_object_distribution.check_on_arrayfire();
-    object_templates[real_objects[0].template_id].img_object_distribution.transfer_from_arrayfire();
-    scaling_factor = *std::max_element(object_templates[real_objects[0].template_id].img_object_distribution.mesh.begin(), object_templates[real_objects[0].template_id].img_object_distribution.mesh.end());
 
+    if(init_objects) {
+        //compute the scaling of the object
+        object_templates[real_objects[0].template_id].img_object_distribution.check_on_arrayfire();
+        object_templates[real_objects[0].template_id].img_object_distribution.transfer_from_arrayfire();
+        scaling_factor = *std::max_element(
+                object_templates[real_objects[0].template_id].img_object_distribution.mesh.begin(),
+                object_templates[real_objects[0].template_id].img_object_distribution.mesh.end());
+    }
     //free up the templates from gpu memory if already hasn't hapepended
     //free_template_af();
 
@@ -1011,6 +1027,10 @@ void SynImage::sample_imgobj_template(af::array& sampled_imgobj,std::vector<std:
     //
 
 
+    //APRTimer timer(true);
+
+   // timer.start_timer("first");
+
     object_templates[real_obj.template_id].img_object_distribution.check_on_arrayfire();
     //sequence of location then in local reference frame
 
@@ -1047,7 +1067,13 @@ void SynImage::sample_imgobj_template(af::array& sampled_imgobj,std::vector<std:
         sampled_imgobj = (real_obj.int_scale/object_templates[real_obj.template_id].max_sampled_int)*object_templates[real_obj.template_id].img_object_distribution.af_mesh(y_points,x_points,z_points);
 
     }
-    object_templates[real_obj.template_id].img_object_distribution.transfer_and_free();
+    //timer.stop_timer();
+
+    //timer.start_timer("second");
+
+    //object_templates[real_obj.template_id].img_object_distribution.transfer_and_free();
+
+    //timer.stop_timer();
 
 
 }
