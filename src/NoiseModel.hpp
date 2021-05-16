@@ -18,6 +18,8 @@ public:
 
     std::uniform_real_distribution<float> dis; //distribution
 
+
+
     unsigned int seed;
 
     Genrand_uni(){
@@ -51,9 +53,14 @@ class Noise_Model {
 
 public:
 
-    uint64_t rand_seed;
+    std::mt19937  generator; //generator
+    std::normal_distribution<float> distribution{0,1};
+
+    unsigned long rand_seed;
     std::string noise_type;
     float gauss_var;
+    float poisson_factor = 1.0f;
+
 
     Noise_Model(){
         //rand_seed = std::random_device{}();
@@ -63,6 +70,7 @@ public:
     void set_seed(uint64_t seed_val){
         rand_seed = seed_val;
         af::setSeed(rand_seed);
+        generator.seed(seed_val);
     }
 
     void randomize_seed(){
@@ -96,6 +104,24 @@ public:
 
     }
 
+    template<typename T>
+    void apply_poisson_noise_cpu(std::vector<T>& input_img){
+
+
+//        std::cout << distribution.mean() << std::endl;
+//        std::cout << distribution.stddev() << std::endl;
+
+        //float val = distribution(generator);
+
+        for (int i = 0; i < input_img.size(); ++i) {
+            input_img[i] = std::abs(std::round(input_img[i] + sqrt(1.0*input_img[i])*distribution(generator)));
+
+           // input_img[i] = std::abs(input_img[i]);
+        }
+
+
+    }
+
     void apply_poisson_noise(af::array& input_image,float noise_var){
         //
         //  Applying poisson type noise as implimented in Matlab imnoise
@@ -117,7 +143,7 @@ public:
 
                 //temp =    input_image(af::span,af::span,i);
 
-                input_image(af::span,af::span,i)+= sqrt(input_image(af::span,af::span,i))*af::randn(input_image.dims(0),input_image.dims(1),1);
+                input_image(af::span,af::span,i)+= poisson_factor*sqrt(input_image(af::span,af::span,i))*af::randn(input_image.dims(0),input_image.dims(1),1);
 
                 // temp = input_image(af::span,af::span,i);
 

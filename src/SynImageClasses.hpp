@@ -963,7 +963,7 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
 
     //std::cout << max_val << std::endl;
 
-    noise_properties.apply_noise_model(gen_image.af_mesh);
+    //noise_properties.apply_noise_model(gen_image.af_mesh);
 
     int num_byts = sizeof(S);
 
@@ -975,6 +975,13 @@ void SynImage::generate_syn_image(MeshDataAF<S>& gen_image,bool init_objects){
     timer.stop_timer();
 
     gen_image.transfer_from_arrayfire();
+
+    if(noise_properties.noise_type != "none") {
+
+        noise_properties.apply_poisson_noise_cpu(gen_image.mesh);
+    }
+
+
 
 
 
